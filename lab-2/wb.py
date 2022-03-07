@@ -2,11 +2,9 @@ import cv2
 import numpy as np
 import random
 
-# 
+
+#
 def average_white_balance(img):
-    '''
-    
-    '''
     # 分离三个通道
     b, g, r = cv2.split(img)
     # 计算每个通道的平均值
@@ -28,19 +26,6 @@ def average_white_balance(img):
     # 例：
     # np: 250 + 10 = 260 > 255 = 4
     # cv: 250 + 10 = 260 > 255 = 255
-    
+
     img = cv2.merge([b, g, r])
     return img
-
-def perfect_reflection(img):
-    '''
-    完美反射
-    STEP 1：计算每个像素的R\G\B之和
-    STEP 2：按R+G+B值的大小计算出其前Ratio%的值作为参考点的的阈值T
-    STEP 3：对图像中的每个点，计算其中R+G+B值大于T的所有点的R\G\B分量的累积和的平均值
-    STEP 4：对每个点将像素量化到[0,255]之间
-    依赖ratio值选取而且对亮度最大区域不是白色的图像效果不佳。
-    '''
-    b, g, r = cv2.split(img)
-    m, n, t = img.shape
-    # STEP 1
