@@ -16,15 +16,15 @@ import torch.optim as optim
 from torchvision.utils import save_image
 import matplotlib.pyplot as plt
 
-#Loadung the model vgg19 that will serve as the base model
+# Loadung the model vgg19 that will serve as the base model
 model = models.vgg19(pretrained=True).features
 # the vgg19 model has three components :
-#features: containg all the conv, relu and maxpool
-#avgpool: containing the avgpool layer
-#classifier: contains the Dense layer(FC part of the model)
+# features: containg all the conv, relu and maxpool
+# avgpool: containing the avgpool layer
+# classifier: contains the Dense layer(FC part of the model)
 
 #Assigning the GPU to the variable device
-device = torch.device("cpu")
+device = torch.device("cuda")
 
 
 # [0,5,10,19,28] are the index of the layers we will be using to calculate the loss as per the paper of NST
@@ -64,7 +64,7 @@ def image_loader(path):
     image = Image.open(path)
     #defining the image transformation steps to be performed before feeding them to the model
     loader = transforms.Compose(
-        [transforms.Resize((512, 512)),
+        [transforms.Resize((1080, 1920)),
          transforms.ToTensor()])
     #The preprocessing steps involves resizing the image and then converting it to a tensor
 
@@ -117,14 +117,14 @@ def calculate_loss(gen_features, orig_feautes, style_featues):
 model = VGG().to(device).eval()
 
 #initialize the paramerters required for fitting the model
-epoch = 7000
-lr = 0.004
+epoch = 10000
+lr = 0.1
 alpha = 8
 beta = 70
 
 #using adam optimizer and it will update the generated image not the model parameter
 optimizer = optim.Adam([generated_image], lr=lr)
-
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1000, gamma=0.1)
 #iterating for 1000 times
 for e in range(epoch):
     #extracting the features of generated, content and the original required for calculating the loss
@@ -138,9 +138,10 @@ for e in range(epoch):
     optimizer.zero_grad()
     total_loss.backward()
     optimizer.step()
-
     #print the image and save it after each 100 epoch
     if (not (e % 100)):
-        print(total_loss)
+        scheduler.step()
+
+        print(f"epoch:{e}/{epoch}\t loss:{total_loss.item()}")
 
         save_image(generated_image, "gen.png")
